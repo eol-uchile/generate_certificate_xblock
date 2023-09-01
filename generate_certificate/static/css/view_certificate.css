@@ -1,0 +1,43 @@
+
+/* CSS for Media theme */
+.view_certificate_block .alert {
+    position: relative;
+    font-style: italic;
+    padding: .75rem 1.25rem;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+    margin-bottom: 1em;
+}
+
+.view_certificate_block .alert-warning {
+    color: #856404 !important;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+    
+}
+.view_certificate_block #error-message {
+    color: #856404 !important;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+    display: none;
+}
+.view_certificate_block .btn.generate_certs, .view_certificate_block .btn{
+    border-color: #0075b4;
+    background: #0075b4;
+    color: #fcfcfc;
+    border-style: solid;
+    border-radius: 0.1875rem;
+    border-width: 1px;
+    box-shadow: none;
+    padding: 0.625rem 1.25rem;
+    font-size: 16px;
+    font-weight: normal;
+    text-shadow: none;
+    text-transform: capitalize;
+    font: normal 1.2rem/1.6rem;
+}
+
+.view_certificate_block .btn.generate_certs:hover, .view_certificate_block .btn:hover{
+  border-color: #065683;
+background-color: #065683;
+color: #fcfcfc;}

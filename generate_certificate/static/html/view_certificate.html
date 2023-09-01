@@ -1,0 +1,33 @@
+<div class="view_certificate_block">
+   {%if passed %}
+      {%if cert%}
+         <div class="msg-content">
+            <h4 class="hd hd-4 title">{{cert.title}}</h4>
+            <p class="copy">{{cert.msg}}</p>
+         </div>
+         <div class="msg-actions" style="width: auto;">
+            {%if cert.cert_web_view_url%}
+               <a class="btn" href="{{cert.cert_web_view_url}}" rel="noopener" target="_blank">Ver Certificado<span class="sr"></span></a>
+            {%elif cert.cert_status == CertificateStatuses.downloadable and cert.download_url%}
+               <a class="btn" href="{{cert.download_url}}" rel="noopener" target="_blank">Download Your Certificate <span class="sr"></span></a>
+            {%elif cert.cert_status == CertificateStatuses.requesting%}
+               <button  class="btn generate_certs" data-endpoint="{{post_url}}" id="btn_generate_cert">Generar Certificado</button>
+            {%endif%}
+         </div>
+      
+      {% else %}
+         <div class="alert alert-warning" style="line-height: 1;">
+            <p> <strong>Certificado no disponible</strong>.</p>
+         </div>
+      {%endif%}
+   {%else%}
+      <div class="alert alert-warning" style="line-height: 1;">
+         <p><strong>No cumple los requisitos para obtener el certificado</strong>.</p>
+      </div>
+   {%endif%}
+   <div id="error-message" class="alert alert-warning" style="line-height: 1;">
+      <p>El curso <strong>no se ha configurado correctamente</strong>.</p>
+      <p>Contáctese con el equipo del curso o mesa de ayuda.</p>
+   </div>
+</div>
+

@@ -7,12 +7,14 @@
          </div>
          <div class="msg-actions" style="width: auto;">
             {%if cert.cert_web_view_url%}
-               <a class="btn" href="{{cert.cert_web_view_url}}" rel="noopener" target="_blank">Ver Certificado<span class="sr"></span></a>
+               <a class="btn" href="{{cert.cert_web_view_url}}" rel="noopener" target="_blank" id="view_cert">Ver Certificado<span class="sr"></span></a>
+               <button  class="btn generate_certs"  id="btn_rege_cert">Regenerar Certificado</button>            
             {%elif cert.cert_status == CertificateStatuses.downloadable and cert.download_url%}
                <a class="btn" href="{{cert.download_url}}" rel="noopener" target="_blank">Download Your Certificate <span class="sr"></span></a>
             {%elif cert.cert_status == CertificateStatuses.requesting%}
-               <button  class="btn generate_certs" data-endpoint="{{post_url}}" id="btn_generate_cert">Generar Certificado</button>
+               <button  class="btn generate_certs" data-endpoint="{{post_url}}" id="btn_generate_cert">Generar Certificado</button>            
             {%endif%}
+            <p id="rege_cert" ></p>
          </div>
       
       {% else %}

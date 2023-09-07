@@ -8,9 +8,13 @@ from xblockutils.studio_editable import StudioEditableXBlockMixin
 from xblockutils.resources import ResourceLoader
 from django.template import Context, Template
 from django.urls import reverse
-from lms.djangoapps.certificates.models import CertificateStatuses
+from lms.djangoapps.certificates.models import CertificateStatuses, GeneratedCertificate
 from django.contrib.auth.models import User
 from lms.djangoapps.grades.course_grade_factory import CourseGradeFactory
+
+from xmodule.modulestore.django import modulestore
+from django.http import HttpResponse, HttpResponseBadRequest,HttpResponseServerError
+from lms.djangoapps.certificates.api import regenerate_user_certificates
 log = logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
 # Make '_' a no-op so we can scrape strings
@@ -149,6 +153,54 @@ class CertificateLinkXBlock(StudioEditableXBlockMixin, XBlock):
             }
         return context
 
+    @XBlock.json_handler
+    def regenerate_certificate_for_user(self, data, suffix=''):
+        log.info("entramos?")
+        from common.djangoapps.student.models import CourseEnrollment
+        user = User.objects.get(id=self.scope_ids.user_id)
+        # Check that the course exists
+        course = modulestore().get_course(self.course_id)
+        if course is None:
+            msg = _("The course {course_key} does not exist").format(course_key= str(self.course_id))
+            return {"error":msg}
+
+        # Check that the user is enrolled in the course
+        if not CourseEnrollment.is_enrolled(user, self.course_id):
+            msg = _("User {username} is not enrolled in the course {course_key}").format(
+                username=user.username,
+                course_key=str(self.course_id)
+            )
+            return {"error":msg}
+        
+        cert = GeneratedCertificate.certificate_for_student(user, self.course_id)
+        if cert is None:
+            msg = _("User {username} dont have a certificate in this course {course_key}").format(
+                username=user.username,
+                course_key=str(self.course_id)
+            )
+            return {"error":msg}
+
+
+        # Attempt to regenerate certificates
+        try:
+            regenerate_user_certificates(user, self.course_id, course=course)
+            print("AAAAAAAAAAALOOOOOOOOOOOOOOO")
+        except Exception :  # pylint: disable=bare-except
+            # We are pessimistic about the kinds of errors that might get thrown by the
+            # certificates API.  This may be overkill, but we're logging everything so we can
+            # track down unexpected errors.
+            log.exception(
+                "Could not regenerate certificates for user %s in course %s",
+                user.id,
+                str(self.course_id)
+            )
+            return {"error":_("An unexpected error occurred while regenerating certificates.")}
+
+        log.info(
+            "Started regenerating certificates for user %s in course %s from the support page.",
+            user.id, str(self.course_id)
+        )
+        return {"result": "success"}
 
     @XBlock.json_handler
     def studio_submit(self, data, suffix=''):

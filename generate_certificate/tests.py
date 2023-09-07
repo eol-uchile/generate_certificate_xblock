@@ -23,9 +23,12 @@ import urllib.parse
 from .generate_certificate import CertificateLinkXBlock
 from datetime import datetime
 from pytz import UTC
-from lms.djangoapps.certificates.models import CertificateTemplate, CertificateGenerationCourseSetting
+from lms.djangoapps.certificates.models import CertificateTemplate, CertificateGenerationCourseSetting, GeneratedCertificate
 from lms.djangoapps.certificates.models import CertificateStatuses, CertificateGenerationConfiguration
 from lms.djangoapps.certificates.tests.factories import GeneratedCertificateFactory
+
+from opaque_keys.edx.keys import CourseKey
+from uuid import uuid4
 # Create your tests here.
 
 class TestRequest(object):
@@ -95,6 +98,10 @@ class TestCertificateLinkXBlock(UrlResetMixin, ModuleStoreTestCase):
                 username='studentHonor',
                 password='12345',
                 email='studentHonor@edx.org')
+            self.studentNoenroll = UserFactory(
+                username='studentNoEnrollment',
+                password='12345',
+                email='studentNoEnrollment@edx.org')
 
             CourseEnrollmentFactory(
                 user=self.student, course_id=self.course.id)
@@ -316,3 +323,60 @@ class TestCertificateLinkXBlock(UrlResetMixin, ModuleStoreTestCase):
         # self.assertEqual(response['cert'].msg, "You are enrolled in the audit track for this course. The audit track does not include a certificate")
         self.assertEqual(response['cert'].download_url, None)
         self.assertEqual(response['cert'].cert_web_view_url, None)
+
+    def test_regenerate_cert(self):
+        # successful certificate regeneration
+        GeneratedCertificateFactory.create(user = self.studentHonor,course_id= self.course2.id, status=CertificateStatuses.downloadable) 
+        self.xblock2.scope_ids.user_id = self.studentHonor.id
+        request = TestRequest()
+        request.method = 'POST'
+        data = json.dumps({})
+        request.body = data.encode()
+        response = self.xblock2.regenerate_certificate_for_user(request)
+        data_response =  json.loads(response._app_iter[0].decode())
+
+        self.assertEqual(data_response, {"result":"success"})
+
+    def test_regenerate_cert_no_enroll(self):
+        # certificate regeneration with unrolled user
+        GeneratedCertificateFactory.create(user = self.studentNoenroll,course_id= self.course2.id, status=CertificateStatuses.downloadable) 
+        self.xblock.scope_ids.user_id = self.studentNoenroll.id
+        request = TestRequest()
+        request.method = 'POST'
+        data = json.dumps({})
+        request.body = data.encode()
+        response = self.xblock.regenerate_certificate_for_user(request)
+        data_response =  json.loads(response._app_iter[0].decode())
+
+        self.assertEqual(data_response, {'error': 'User studentNoEnrollment is not enrolled in the course foo/baz/bar'})
+
+    def  mi_funcion_con_exception(self):
+        raise Exception("Test")
+
+    @patch('generate_certificate.generate_certificate.regenerate_user_certificates') 
+    def test_regenerate_cert_exception(self, reg_user_cert):
+        # test to force exception when regenerating a certificate
+        GeneratedCertificateFactory.create(user = self.studentHonor,course_id= self.course2.id, status=CertificateStatuses.downloadable) 
+        self.xblock2.scope_ids.user_id = self.studentHonor.id
+        reg_user_cert.side_effect = self.mi_funcion_con_exception
+        request = TestRequest()
+        request.method = 'POST'
+        data = json.dumps({})
+        request.body = data.encode()
+        response = self.xblock2.regenerate_certificate_for_user(request)
+        data_response =  json.loads(response._app_iter[0].decode())
+
+        self.assertEqual(data_response, {"error":"An unexpected error occurred while regenerating certificates."})      
+
+    def test_regenerate_no_cert(self):
+        # regenerate a certificate that has not been created or does not exist
+        self.xblock2.scope_ids.user_id = self.studentHonor.id
+        request = TestRequest()
+        request.method = 'POST'
+        data = json.dumps({})
+        request.body = data.encode()
+        response = self.xblock2.regenerate_certificate_for_user(request)
+        data_response =  json.loads(response._app_iter[0].decode())
+
+        self.assertEqual(data_response, {'error': "User studentHonor dont have a certificate in this course foo/xd/bar"})
+        

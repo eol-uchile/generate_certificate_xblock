@@ -14,8 +14,8 @@
             {%elif cert.cert_status == CertificateStatuses.requesting%}
                <button  class="btn generate_certs" data-endpoint="{{post_url}}" id="btn_generate_cert">Generar Certificado</button>            
             {%endif%}
-            <p id="rege_cert" ></p>
          </div>
+         <p id="rege_cert" ></p>
       
       {% else %}
          <div class="alert alert-warning" style="line-height: 1;">

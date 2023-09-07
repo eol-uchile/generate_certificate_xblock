@@ -35,7 +35,8 @@
     text-shadow: none;
     text-transform: capitalize;
     font: normal 1.2rem/1.6rem;
-}
+    margin-right: 10px;
+}   
 
 .view_certificate_block .btn.generate_certs:hover, .view_certificate_block .btn:hover{
   border-color: #065683;

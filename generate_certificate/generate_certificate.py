@@ -155,7 +155,6 @@ class CertificateLinkXBlock(StudioEditableXBlockMixin, XBlock):
 
     @XBlock.json_handler
     def regenerate_certificate_for_user(self, data, suffix=''):
-        log.info("entramos?")
         from common.djangoapps.student.models import CourseEnrollment
         user = User.objects.get(id=self.scope_ids.user_id)
         # Check that the course exists
@@ -184,7 +183,6 @@ class CertificateLinkXBlock(StudioEditableXBlockMixin, XBlock):
         # Attempt to regenerate certificates
         try:
             regenerate_user_certificates(user, self.course_id, course=course)
-            print("AAAAAAAAAAALOOOOOOOOOOOOOOO")
         except Exception :  # pylint: disable=bare-except
             # We are pessimistic about the kinds of errors that might get thrown by the
             # certificates API.  This may be overkill, but we're logging everything so we can

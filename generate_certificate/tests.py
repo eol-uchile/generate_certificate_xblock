@@ -196,7 +196,7 @@ class TestCertificateLinkXBlock(UrlResetMixin, ModuleStoreTestCase):
     @patch('lms.djangoapps.certificates.api.get_active_web_certificate')
     @patch('lms.djangoapps.grades.course_grade_factory.CourseGradeFactory.read')
     def test_context_student_4(self, coursegradefractory_read, get_web_cert ,cert_api, auto_certs_api):
-        # with only one model
+        # with only one model(CertificateTemplate)
         grade = Mock()
         grade.passed = True
         cert_temp2 = CertificateTemplate(name= str(self.course2.id), template= "", organization_id= 0
@@ -217,7 +217,7 @@ class TestCertificateLinkXBlock(UrlResetMixin, ModuleStoreTestCase):
     @patch('lms.djangoapps.certificates.api.get_active_web_certificate')
     @patch('lms.djangoapps.grades.course_grade_factory.CourseGradeFactory.read')
     def test_context_student_5(self, coursegradefractory_read, get_web_cert ,cert_api, auto_certs_api):
-        #with two models
+        #with two models(CertificateTemplate and CertificateGenerationCourseSetting)
         grade = Mock()
         grade.passed = True
         cert_temp2 = CertificateTemplate(name= str(self.course2.id), template= "", organization_id= 0
@@ -350,7 +350,7 @@ class TestCertificateLinkXBlock(UrlResetMixin, ModuleStoreTestCase):
 
         self.assertEqual(data_response, {'error': 'User studentNoEnrollment is not enrolled in the course foo/baz/bar'})
 
-    def  mi_funcion_con_exception(self):
+    def  exception_error(self):
         raise Exception("Test")
 
     @patch('generate_certificate.generate_certificate.regenerate_user_certificates') 
@@ -358,7 +358,7 @@ class TestCertificateLinkXBlock(UrlResetMixin, ModuleStoreTestCase):
         # test to force exception when regenerating a certificate
         GeneratedCertificateFactory.create(user = self.studentHonor,course_id= self.course2.id, status=CertificateStatuses.downloadable) 
         self.xblock2.scope_ids.user_id = self.studentHonor.id
-        reg_user_cert.side_effect = self.mi_funcion_con_exception
+        reg_user_cert.side_effect = self.exception_error
         request = TestRequest()
         request.method = 'POST'
         data = json.dumps({})
